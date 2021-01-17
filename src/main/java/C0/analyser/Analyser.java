@@ -424,7 +424,7 @@ public final class Analyser {
         List<Type> ParamTypeList = AuxiliaryFunction.TypeReturn(name, functionTable);
         if(ParamTypeList.size()==TypeList.size()){
             for (int i=0 ;i<TypeList.size();i++){
-                if(!TypeList.get(i).equals(ParamTypeList.get(i))){
+                if(TypeList.get(i)!=ParamTypeList.get(i)){
                     throw new AnalyzeError(ErrorCode.ParamError);
                 }
             }

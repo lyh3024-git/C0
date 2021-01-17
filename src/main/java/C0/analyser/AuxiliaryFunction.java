@@ -117,6 +117,9 @@ public class AuxiliaryFunction {
         else if(token.getValue().equals("void")){
             return Type.VOID;
         }
+        else if(token.getValue().equals("double")){
+            return Type.DOUBLE;
+        }
         else{
             throw new AnalyzeError(ErrorCode.InvalidInput,token.getStartPos());
         }

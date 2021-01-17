@@ -135,11 +135,13 @@ public class Tokenizer {
     //运算符
     private Token lexOperatorOrUnknown() throws TokenizeError {
         Pos startPos;
-        switch (it.nextChar()) {
+        switch (it.peekChar()) {
             case '+':
+                it.nextChar();
                 return new Token(TokenType.PLUS, '+', it.previousPos(), it.currentPos());
 
             case '-':
+                it.nextChar();
                 //读到“-”判断是“-”还是“->”
                 startPos=it.previousPos();
                 if(it.peekChar()=='>'){
@@ -149,12 +151,15 @@ public class Tokenizer {
                 return new Token(TokenType.MINUS, '-', it.previousPos(), it.currentPos());
 
             case '*':
+                it.nextChar();
                 return new Token(TokenType.MUL, '*', it.previousPos(), it.currentPos());
 
             case '/':
+                it.nextChar();
                 return new Token(TokenType.DIV, '/', it.previousPos(), it.currentPos());
 
             case '=':
+                it.nextChar();
                 //判断下一个字符是不是‘=’
                 startPos=it.previousPos();
                 if(it.peekChar()=='='){
@@ -164,6 +169,7 @@ public class Tokenizer {
                 return new Token(TokenType.ASSIGN, '/', it.previousPos(), it.currentPos());
 
             case '!':
+                it.nextChar();
                 //不等于判断下一个字符是不是‘=’
                 startPos=it.previousPos();
                 if(it.peekChar()=='='){
@@ -176,6 +182,7 @@ public class Tokenizer {
                 }
 
             case '<':
+                it.nextChar();
                 //判断下一个字符是不是‘=’
                 startPos=it.previousPos();
                 if(it.peekChar()=='='){
@@ -185,6 +192,7 @@ public class Tokenizer {
                 return new Token(TokenType.LT, '<', it.previousPos(), it.currentPos());
 
             case '>':
+                it.nextChar();
                 //判断下一个字符是不是‘=’
                 startPos=it.previousPos();
                 if(it.peekChar()=='='){
@@ -194,26 +202,34 @@ public class Tokenizer {
                 return new Token(TokenType.GT, '>', it.previousPos(), it.currentPos());
 
             case '(':
+                it.nextChar();
                 return new Token(TokenType.L_PAREN, '(', it.previousPos(), it.currentPos());
 
             case ')':
+                it.nextChar();
                 return new Token(TokenType.R_PAREN, ')', it.previousPos(), it.currentPos());
 
             case '{':
+                it.nextChar();
                 return new Token(TokenType.L_BRACE, '{', it.previousPos(), it.currentPos());
 
             case '}':
+                it.nextChar();
                 return new Token(TokenType.R_BRACE, '}', it.previousPos(), it.currentPos());
 
             case ',':
+                it.nextChar();
                 return new Token(TokenType.COMMA, ',', it.previousPos(), it.currentPos());
 
             case ';':
+                it.nextChar();
                 return new Token(TokenType.SEMICOLON, ';', it.previousPos(), it.currentPos());
 
             case ':':
+                it.nextChar();
                 return new Token(TokenType.COLON,':',it.previousPos(),it.currentPos());
             default:
+                it.nextChar();
                 // 不认识这个输入，摸了
                 throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
         }
