@@ -34,7 +34,7 @@ public class Tokenizer {
             return lexUInt();
         } else if (Character.isAlphabetic(peek)||peek=='_') {
             return lexIdentOrKeyword();
-        } else if(peek=='\"'){
+        } else if(peek=='"'){
             return lexStringLiteral();
         }else {
             return lexOperatorOrUnknown();

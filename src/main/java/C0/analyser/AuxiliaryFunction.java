@@ -12,6 +12,7 @@ import C0.tokenizer.TokenType;
 import C0.util.Type;
 
 import java.awt.datatransfer.FlavorEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 //这里存放语法分析需要用到的辅助函数
@@ -50,9 +51,9 @@ public class AuxiliaryFunction {
      * @return
      */
     public static Symbol isDefinedSymbol(List<Symbol> symbolTable,int level,String name){
-        for(Symbol symbol:symbolTable){
-            if(symbol.getName().equals(name)){
-                if(symbol.getLevel()<=level){
+        for(int i=level;i>=0;i--){
+            for (Symbol symbol : symbolTable) {
+                if (symbol.getLevel()==i&&symbol.getName().equals(name)) {
                     return symbol;
                 }
             }
@@ -73,6 +74,20 @@ public class AuxiliaryFunction {
             }
         }
         return null;
+    }
+
+    /**
+     * 判断函数是否有返回值
+     * */
+    public static boolean hasReturn(String name, List<FunctionDef> functionDefs ){
+        FunctionDef functionDef = isDefinedFunction(functionDefs,name);
+        if (name.equals("getint") || name.equals("getdouble") || name.equals("getchar")) {
+            return true;
+        }else if(functionDef!=null){
+            return functionDef.getType()==Type.INT || functionDef.getType()==Type.DOUBLE;
+        }
+
+        return false;
     }
 
     /**
@@ -216,5 +231,29 @@ public class AuxiliaryFunction {
         else {
             return null;
         }
+    }
+
+    /**
+     * 返回函数的参数类型
+     * */
+    public static List<Type> TypeReturn(String name, List<FunctionDef> FunctionTable ){
+        List<Type> TypeList = new ArrayList<>();
+        FunctionDef functionDef = isDefinedFunction(FunctionTable,name);
+        if (name.equals("putint") || name.equals("putchar") || name.equals("putstr")) {
+            TypeList.add(Type.INT);
+            return TypeList;
+        }else if(name.equals("putdouble")){
+            TypeList.add(Type.DOUBLE);
+            return TypeList;
+        }
+
+        if(functionDef!=null){
+            List<Parameter> parameters = functionDef.getParameters();
+            for (Parameter parameter : parameters) {
+                TypeList.add(parameter.getType());
+            }
+            return TypeList;
+        }
+        return TypeList;
     }
 }

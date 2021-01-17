@@ -330,7 +330,7 @@ public final class Analyser {
 
             stack.push(TokenType.L_PAREN);
 
-            FunctionDef functionName=AuxiliaryFunction.isDefinedFunction(functionTable,l_token.getValueString());
+            FunctionDef function=AuxiliaryFunction.isDefinedFunction(functionTable,l_token.getValueString());
 
             Instruction instruction;//call函数调用要添加在最后
 
@@ -339,73 +339,26 @@ public final class Analyser {
                 globalTable.add(new GlobalDef(l_token.getValueString(),1,l_token.getValueString().toCharArray()));
                 instruction=new Instruction(Operation.callname,globalOffset,4);
                 l_type=AuxiliaryFunction.getTypeofLibrary(l_token.getValueString());
-                //这里的functionName表示库函数
-                functionName=new FunctionDef(globalOffset,l_token.getValueString(),-1);
-                functionName.setType(l_type);
                 globalOffset++;
             }
-            else if(functionName!=null){
-                instruction=new Instruction(Operation.call,functionName.getFunctionID(),4);
-                l_type=functionName.getType();
+            else if(function!=null){
+                instruction=new Instruction(Operation.call,function.getFunctionID(),4);
+                l_type=function.getType();
             }
             else{
                 throw new AnalyzeError(ErrorCode.NotDeclared,l_token.getStartPos());
             }
 
-            if(functionName.getType()==Type.VOID){
-                instructionList.add(new Instruction(Operation.stackalloc,0,4));
+            if(AuxiliaryFunction.hasReturn(l_token.getValueString(),functionTable)){
+                instructionList.add(new Instruction(Operation.stackalloc,1,4));
             }
             else {
-                instructionList.add(new Instruction(Operation.stackalloc,1,4));
+                instructionList.add(new Instruction(Operation.stackalloc,0,4));
             }
 
             //分析参数列表
             if(check(TokenType.L_PAREN)||check(TokenType.IDENT)||check(TokenType.MINUS)||check(TokenType.UINT_LITERAL)||check(TokenType.STRING_LITERAL)){
-                List<Type> paramsTypeList=new ArrayList<>();
-                int paramsCount=0;
-                Type type=analyseExpression();
-                paramsTypeList.add(type);
-                while(!stack.empty()&&stack.peek()!=TokenType.L_PAREN){
-                    Instruction.addInstruction(stack.pop(),instructionList);
-                }
-                paramsCount++;
-
-                while(check(TokenType.COMMA)){
-                    next();
-                    type=analyseExpression();
-                    paramsTypeList.add(type);
-                    while(!stack.empty()&&stack.peek()!=TokenType.L_PAREN){
-                        Instruction.addInstruction(stack.pop(),instructionList);
-                    }
-                    paramsCount++;
-                }
-
-                //库函数
-                if(functionName.getFunctionID()==-1){
-                    Type paramType=AuxiliaryFunction.getParamTypeofLibrary(l_token.getValueString());
-                    if(!(paramsTypeList.size()==1&&paramsTypeList.get(0)==paramType)){
-                        throw new AnalyzeError(ErrorCode.TypeError);
-                    }
-                }
-                else{
-                    //获取函数本身的参数列表
-                    List<Type> paramsTypeList2=new ArrayList<>();
-                    List<Parameter> parameterList1=functionName.getParameters();
-                    for(Parameter parameter:parameterList1){
-                        paramsTypeList2.add(parameter.getType());
-                    }
-
-                    if(paramsTypeList.size()==paramsTypeList2.size()){
-                        for (int i=0;i<paramsTypeList.size();i++){
-                            if(!paramsTypeList.get(i).equals(paramsTypeList2.get(i))){
-                                throw new AnalyzeError(ErrorCode.ParamError,l_token.getStartPos());
-                            }
-                        }
-                    }
-                    else{
-                        throw new AnalyzeError(ErrorCode.ParamError,l_token.getStartPos());
-                    }
-                }
+                analyseCallParamList(l_token.getValueString());
             }
             expect(TokenType.R_PAREN);
 
@@ -443,6 +396,43 @@ public final class Analyser {
             }
         }
         return l_type;
+    }
+
+    /**
+     * call_param_list -> expr (',' expr)*
+     * 同时判断参数列表与函数的参数列表是否一一对应
+     * */
+    private int analyseCallParamList(String name) throws CompileError{
+        List<Type> TypeList = new ArrayList<>();
+        int count = 0;
+        Type type = analyseExpression();
+        TypeList.add(type);
+        while (!stack.empty() && stack.peek() != TokenType.L_PAREN) {
+            Instruction.addInstruction(stack.pop(),instructionList);
+        }
+        count++;
+
+        while(nextIf(TokenType.COMMA)!=null){
+            type = analyseExpression();
+            TypeList.add(type);
+            while (!stack.empty() && stack.peek() != TokenType.L_PAREN) {
+                Instruction.addInstruction(stack.pop(),instructionList);
+            }
+            count++;
+        }
+
+        List<Type> ParamTypeList = AuxiliaryFunction.TypeReturn(name, functionTable);
+        if(ParamTypeList.size()==TypeList.size()){
+            for (int i=0 ;i<TypeList.size();i++){
+                if(!TypeList.get(i).equals(ParamTypeList.get(i))){
+                    throw new AnalyzeError(ErrorCode.ParamError);
+                }
+            }
+        }else{
+            throw new AnalyzeError(ErrorCode.ParamError);
+        }
+
+        return count;
     }
 
     /**
@@ -679,9 +669,9 @@ public final class Analyser {
 
         analyseBlockStmt(function);
 
-//        Instruction jump_Instruction2=new Instruction(Operation.br,0,4);
-//        instructionList.add(jump_Instruction2);
-//        int else_StartPos=instructionList.size();
+        Instruction jump_Instruction2=new Instruction(Operation.br,0,4);
+        instructionList.add(jump_Instruction2);
+        int else_StartPos=instructionList.size();
 
         int jump_size1=instructionList.size()-if_StartPos;//表示if不成立时该跳转到offset
         jump_Instruction1.setX(jump_size1);
@@ -698,7 +688,7 @@ public final class Analyser {
             }
         }
 
-//        jump_Instruction2.setX(instructionList.size()-else_StartPos);
+        jump_Instruction2.setX(instructionList.size()-else_StartPos);
     }
 
     /**
