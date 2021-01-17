@@ -1,0 +1,18 @@
+let x:int=2;
+const y:int=3;
+fn fo(i: int) -> int {
+    return -i;
+}
+fn foo(i: int) -> int {
+    fo(1);
+    let m:int=20;
+    if(m>10)
+    {m=11;}
+
+    return i;
+}
+
+fn main() -> void {
+    putint(1);
+    foo(1);
+}
