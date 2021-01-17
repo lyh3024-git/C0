@@ -183,6 +183,11 @@ public class AuxiliaryFunction {
         return null;
     }
 
+    /**
+     * 获取库函数的返回值类型
+     * @param name
+     * @return
+     */
     public static Type getTypeofLibrary(String name){
         if(name.equals("getint")||name.equals("getchar")){
             return Type.INT;
@@ -192,6 +197,23 @@ public class AuxiliaryFunction {
         }
         else{
             return Type.VOID;
+        }
+    }
+
+    /**
+     * 获取库函数的参数类型
+     * @param name
+     * @return
+     */
+    public static Type getParamTypeofLibrary(String name){
+        if(name.equals("putint")||name.equals("putchar")||name.equals("putstr")){
+            return Type.INT;
+        }
+        else if(name.equals("putdouble")){
+            return Type.DOUBLE;
+        }
+        else {
+            return null;
         }
     }
 }

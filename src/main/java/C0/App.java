@@ -25,8 +25,7 @@ import org.checkerframework.checker.units.qual.A;
 import javax.xml.crypto.Data;
 
 public class App {
-    public static void main(String[] args) throws CompileError, FileNotFoundException {
-        try {
+    public static void main(String[] args) throws CompileError, IOException {
             List<GlobalDef> globalTable;
             List<FunctionDef> functionTable;
             List<Byte> Output = new ArrayList<>();
@@ -92,9 +91,6 @@ public class App {
                 outPutByte[i]=Output.get(i);
             }
             outputStream.write(outPutByte);
-        }catch (Exception e){
-            System.out.println("error");
-        }
     }
 
 

@@ -335,8 +335,11 @@ public final class Analyser {
             if(AuxiliaryFunction.isLibraryFunction(l_token.getValueString())){
                 globalTable.add(new GlobalDef(l_token.getValueString(),1,l_token.getValueString().toCharArray()));
                 instruction=new Instruction(Operation.callname,globalOffset);
-                globalOffset++;
                 l_type=AuxiliaryFunction.getTypeofLibrary(l_token.getValueString());
+                //这里的functionName表示库函数
+                functionName=new FunctionDef(globalOffset,l_token.getValueString(),-1);
+                functionName.setType(l_type);
+                globalOffset++;
             }
             else if(functionName!=null){
                 instruction=new Instruction(Operation.call,functionName.getFunctionID());
@@ -374,22 +377,31 @@ public final class Analyser {
                     paramsCount++;
                 }
 
-                //获取函数本身的参数列表
-                List<Type> paramsTypeList2=new ArrayList<>();
-                List<Parameter> parameterList=functionName.getParameters();
-                for(Parameter parameter:parameterList){
-                    paramsTypeList2.add(parameter.getType());
-                }
-
-                if(paramsTypeList.size()==paramsTypeList2.size()){
-                    for (int i=0;i<paramsTypeList.size();i++){
-                        if(!paramsTypeList.get(i).equals(paramsTypeList2.get(i))){
-                            throw new AnalyzeError(ErrorCode.ParamError,l_token.getStartPos());
-                        }
+                //库函数
+                if(functionName.getFunctionID()==-1){
+                    Type paramType=AuxiliaryFunction.getParamTypeofLibrary(l_token.getValueString());
+                    if(!(paramsTypeList.size()==1&&paramsTypeList.get(0)==paramType)){
+                        throw new AnalyzeError(ErrorCode.TypeError);
                     }
                 }
                 else{
-                    throw new AnalyzeError(ErrorCode.ParamError,l_token.getStartPos());
+                    //获取函数本身的参数列表
+                    List<Type> paramsTypeList2=new ArrayList<>();
+                    List<Parameter> parameterList1=functionName.getParameters();
+                    for(Parameter parameter:parameterList1){
+                        paramsTypeList2.add(parameter.getType());
+                    }
+
+                    if(paramsTypeList.size()==paramsTypeList2.size()){
+                        for (int i=0;i<paramsTypeList.size();i++){
+                            if(!paramsTypeList.get(i).equals(paramsTypeList2.get(i))){
+                                throw new AnalyzeError(ErrorCode.ParamError,l_token.getStartPos());
+                            }
+                        }
+                    }
+                    else{
+                        throw new AnalyzeError(ErrorCode.ParamError,l_token.getStartPos());
+                    }
                 }
             }
             expect(TokenType.R_PAREN);
@@ -823,7 +835,8 @@ public final class Analyser {
                 parameterList.add(new Parameter(paramName.getValueString(),paramType,paramSize));
                 paramSize++;
             }
-            function.setParameters(parameterList);
+            List<Parameter> tmp=new ArrayList<>(parameterList);
+            function.setParameters(tmp);
             function.setParam_slots(paramSize);
         }
 
@@ -847,7 +860,8 @@ public final class Analyser {
 
         function.setLoc_slots(localOffset);
         function.setOffset(globalOffset);
-        function.setInstructions(instructionList);
+        List<Instruction> tmp = new ArrayList<>(instructionList);
+        function.setInstructions(tmp);
 
         globalOffset++;
         functionID++;
