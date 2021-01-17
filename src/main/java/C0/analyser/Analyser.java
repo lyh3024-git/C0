@@ -686,6 +686,7 @@ public final class Analyser {
         int jump_size1=instructionList.size()-if_StartPos;//表示if不成立时该跳转到offset
         jump_Instruction1.setX(jump_size1);
 
+
         if(check(TokenType.ELSE_KW)){
             next();
             if(check(TokenType.IF_KW)){
@@ -697,8 +698,7 @@ public final class Analyser {
             }
         }
 
-        int jump_size2=instructionList.size()-else_StartPos;
-        jump_Instruction2.setX(jump_size2);
+        jump_Instruction2.setX(instructionList.size()-else_StartPos);
     }
 
     /**
@@ -864,7 +864,11 @@ public final class Analyser {
 
         analyseBlockStmt(function);
 
+        if(function.getType()==Type.VOID){
+            instructionList.add(new Instruction(Operation.ret));
+        }
         globalTable.add(new GlobalDef((String)function.getName(),0,function.getName().toCharArray()));
+
 
         function.setLoc_slots(localOffset);
         function.setOffset(globalOffset);
