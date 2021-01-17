@@ -7,6 +7,7 @@ import java.util.*;
 import C0.analyser.Analyser;
 import C0.error.CompileError;
 import C0.instruction.Instruction;
+import C0.instruction.Operation;
 import C0.struct.FunctionDef;
 import C0.struct.GlobalDef;
 import C0.tokenizer.StringIter;
@@ -26,7 +27,7 @@ import javax.xml.crypto.Data;
 
 public class App {
     public static void main(String[] args) throws CompileError, IOException {
-        try {
+
             List<GlobalDef> globalTable;
             List<FunctionDef> functionTable;
             List<Byte> Output = new ArrayList<>();
@@ -95,7 +96,12 @@ public class App {
 
                 for(Instruction instruction:instructions){
                     Output.add(ByteIntToBytes(instruction.getOpt().getByte()));
-                    Output.addAll(IntToBytes(instruction.getX()));
+                    if(instruction.getOpt()== Operation.push){
+                        Output.addAll(LongToBytes(instruction.getX()));
+                    }
+                    else{
+                        Output.addAll(IntToBytes(instruction.getX()));
+                    }
                 }
             }
 
@@ -105,9 +111,7 @@ public class App {
                 outPutByte[i]=Output.get(i);
             }
             outputStream.write(outPutByte);
-        }catch (Exception e){
-            System.exit(-1);
-        }
+
     }
 
 

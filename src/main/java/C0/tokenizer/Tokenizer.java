@@ -36,9 +36,7 @@ public class Tokenizer {
             return lexIdentOrKeyword();
         } else if(peek=='\"'){
             return lexStringLiteral();
-        } else if(peek=='/'){
-            return lexComment();
-        } else {
+        }else {
             return lexOperatorOrUnknown();
         }
     }
