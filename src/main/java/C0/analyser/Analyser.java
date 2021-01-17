@@ -860,9 +860,10 @@ public final class Analyser {
             function.setParam_slots(function.getParam_slots()+1);
         }
 
+        functionTable.add(function);
+
         analyseBlockStmt(function);
 
-        functionTable.add(function);
         globalTable.add(new GlobalDef((String)function.getName(),0,function.getName().toCharArray()));
 
         function.setLoc_slots(localOffset);

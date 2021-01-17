@@ -26,75 +26,88 @@ import javax.xml.crypto.Data;
 
 public class App {
     public static void main(String[] args) throws CompileError, IOException {
-            try {
-                List<GlobalDef> globalTable;
-                List<FunctionDef> functionTable;
-                List<Byte> Output = new ArrayList<>();
-                InputStream inputStream = new FileInputStream(args[0]);
-                Scanner scanner = new Scanner(inputStream);
-                var iter = new StringIter(scanner);
-                Analyser analyser = new Analyser(new Tokenizer(iter));
-                analyser.analyse();
+        try {
+            List<GlobalDef> globalTable;
+            List<FunctionDef> functionTable;
+            List<Byte> Output = new ArrayList<>();
+            InputStream inputStream = new FileInputStream(args[0]);
+            Scanner scanner = new Scanner(inputStream);
+            var iter = new StringIter(scanner);
+            Analyser analyser = new Analyser(new Tokenizer(iter));
+            analyser.analyse();
 
-                globalTable = analyser.getGlobalTable();
-                functionTable = analyser.getFunctionTable();
-                for (GlobalDef globalDef : globalTable) {
-                    System.out.println(globalDef.getName());
-                }
+            globalTable = analyser.getGlobalTable();
+            functionTable = analyser.getFunctionTable();
 
-                functionTable.sort(new Comparator<FunctionDef>() {
-                    @Override
-                    public int compare(FunctionDef o1, FunctionDef o2) {
-                        return o1.getFunctionID() - o2.getFunctionID();
-                    }
-                });
-                for (FunctionDef functionDef : functionTable) {
-                    System.out.println(functionDef.getName());
-                }
-
-                Output.addAll(IntToBytes(0x72303b3e));
-                Output.addAll(IntToBytes(0x00000001));
-
-                //全局量
-                Output.addAll(IntToBytes(globalTable.size()));
-                for(GlobalDef globalDef:globalTable){
-                    Output.add(ByteIntToBytes(globalDef.getIs_const()));
-                    if(globalDef.getByteValues()==null){
-                        Output.addAll(IntToBytes(8));
-                        Output.addAll(LongToBytes(0));
-                    }
-                    else{
-                        Output.addAll(IntToBytes(globalDef.getName().length()));
-                        Output.addAll(ListCharToBytes(globalDef.getByteValues()));
-                    }
-                }
-
-                //函数
-                Output.addAll(IntToBytes(functionTable.size()));
-                for(FunctionDef functionDef:functionTable){
-                    Output.addAll(IntToBytes(functionDef.getFunctionID()));
-                    Output.addAll(IntToBytes(functionDef.getReturn_slots()));
-                    Output.addAll(IntToBytes(functionDef.getParam_slots()));
-                    Output.addAll(IntToBytes(functionDef.getLoc_slots()));
-
-                    List<Instruction> instructions=functionDef.getInstructions();
-                    Output.addAll(IntToBytes(instructions.size()));
-
-                    for(Instruction instruction:instructions){
-                        Output.add(ByteIntToBytes(instruction.getOpt().getByte()));
-                        Output.addAll(IntToBytes(instruction.getX()));
-                    }
-                }
-
-                DataOutputStream outputStream=new DataOutputStream(new FileOutputStream(args[1]));
-                byte[] outPutByte= new byte[Output.size()];
-                for(int i=0;i<Output.size();i++){
-                    outPutByte[i]=Output.get(i);
-                }
-                outputStream.write(outPutByte);
-            }catch (Exception e){
-                System.exit(-1);
+            //-----
+            System.out.println(globalTable.size());
+            for (GlobalDef globalDef : globalTable) {
+                System.out.println(globalDef.getName());
             }
+
+            functionTable.sort(new Comparator<FunctionDef>() {
+                @Override
+                public int compare(FunctionDef o1, FunctionDef o2) {
+                    return o1.getFunctionID() - o2.getFunctionID();
+                }
+            });
+
+            //---------------------------------------
+            System.out.println(functionTable.size());
+            for (FunctionDef functionDef : functionTable) {
+                System.out.println("------------------------");
+                System.out.println(functionDef.getOffset());
+                System.out.println(functionDef.getLoc_slots());
+                System.out.println(functionDef.getParam_slots());
+                System.out.println(functionDef.getReturn_slots());
+                for(Instruction instruction:functionDef.getInstructions()){
+                    System.out.println(instruction.getOpt());
+                }
+            }
+
+            Output.addAll(IntToBytes(0x72303b3e));
+            Output.addAll(IntToBytes(0x00000001));
+
+            //全局量
+            Output.addAll(IntToBytes(globalTable.size()));
+            for(GlobalDef globalDef:globalTable){
+                Output.add(ByteIntToBytes(globalDef.getIs_const()));
+                if(globalDef.getByteValues()==null){
+                    Output.addAll(IntToBytes(8));
+                    Output.addAll(LongToBytes(0));
+                }
+                else{
+                    Output.addAll(IntToBytes(globalDef.getName().length()));
+                    Output.addAll(ListCharToBytes(globalDef.getByteValues()));
+                }
+            }
+
+            //函数
+            Output.addAll(IntToBytes(functionTable.size()));
+            for(FunctionDef functionDef:functionTable){
+                Output.addAll(IntToBytes(functionDef.getFunctionID()));
+                Output.addAll(IntToBytes(functionDef.getReturn_slots()));
+                Output.addAll(IntToBytes(functionDef.getParam_slots()));
+                Output.addAll(IntToBytes(functionDef.getLoc_slots()));
+
+                List<Instruction> instructions=functionDef.getInstructions();
+                Output.addAll(IntToBytes(instructions.size()));
+
+                for(Instruction instruction:instructions){
+                    Output.add(ByteIntToBytes(instruction.getOpt().getByte()));
+                    Output.addAll(IntToBytes(instruction.getX()));
+                }
+            }
+
+            DataOutputStream outputStream=new DataOutputStream(new FileOutputStream(args[1]));
+            byte[] outPutByte= new byte[Output.size()];
+            for(int i=0;i<Output.size();i++){
+                outPutByte[i]=Output.get(i);
+            }
+            outputStream.write(outPutByte);
+        }catch (Exception e){
+            System.exit(-1);
+        }
     }
 
 
