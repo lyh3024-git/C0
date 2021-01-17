@@ -679,9 +679,9 @@ public final class Analyser {
 
         analyseBlockStmt(function);
 
-        Instruction jump_Instruction2=new Instruction(Operation.br,0,4);
-        instructionList.add(jump_Instruction2);
-        int else_StartPos=instructionList.size();
+//        Instruction jump_Instruction2=new Instruction(Operation.br,0,4);
+//        instructionList.add(jump_Instruction2);
+//        int else_StartPos=instructionList.size();
 
         int jump_size1=instructionList.size()-if_StartPos;//表示if不成立时该跳转到offset
         jump_Instruction1.setX(jump_size1);
@@ -698,7 +698,7 @@ public final class Analyser {
             }
         }
 
-        jump_Instruction2.setX(instructionList.size()-else_StartPos);
+//        jump_Instruction2.setX(instructionList.size()-else_StartPos);
     }
 
     /**
