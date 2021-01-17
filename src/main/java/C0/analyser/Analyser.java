@@ -166,14 +166,14 @@ public final class Analyser {
         //添加_start
         globalTable.add(new GlobalDef("_start",1,"_start".toCharArray()));
         if(mainFunction.getType()==Type.VOID){
-            globalInstructionList.add(new Instruction(Operation.stackalloc,0));
-            globalInstructionList.add(new Instruction(Operation.call,mainFunction.getFunctionID()));
+            globalInstructionList.add(new Instruction(Operation.stackalloc,0,4));
+            globalInstructionList.add(new Instruction(Operation.call,mainFunction.getFunctionID(),4));
         }
         else{
             //如果main函数的返回值非空则分配一个slot来存放返回值
-            globalInstructionList.add(new Instruction(Operation.stackalloc,1));
-            globalInstructionList.add(new Instruction(Operation.call,mainFunction.getFunctionID()));
-            globalInstructionList.add(new Instruction(Operation.popn,1));
+            globalInstructionList.add(new Instruction(Operation.stackalloc,1,4));
+            globalInstructionList.add(new Instruction(Operation.call,mainFunction.getFunctionID(),4));
+            globalInstructionList.add(new Instruction(Operation.popn,1,4));
         }
         functionTable.add(new FunctionDef(globalOffset,0,0,0,globalInstructionList,"_start",null,Type.VOID,0));
         globalOffset++;
@@ -293,11 +293,11 @@ public final class Analyser {
                 }
                 //如果是全局变量
                 if(symbol.getLevel()==0){
-                    instructionList.add(new Instruction(Operation.globa,symbol.getOffset()));
+                    instructionList.add(new Instruction(Operation.globa,symbol.getOffset(),4));
                 }
                 //如果是局部变量
                 else{
-                    instructionList.add(new Instruction(Operation.loca,symbol.getOffset()));
+                    instructionList.add(new Instruction(Operation.loca,symbol.getOffset(),4));
                 }
             }
             else if(parameter!=null){
@@ -306,7 +306,7 @@ public final class Analyser {
                 if(parameter.getType()==Type.VOID){
                     throw new AnalyzeError(ErrorCode.InvalidAssignment,l_token.getStartPos());
                 }
-                instructionList.add(new Instruction(Operation.arga,paramsOffset+parameter.getOffset()));
+                instructionList.add(new Instruction(Operation.arga,paramsOffset+parameter.getOffset(),4));
             }
             else {
                 throw new AnalyzeError(ErrorCode.NotDeclared,l_token.getStartPos());
@@ -337,7 +337,7 @@ public final class Analyser {
             //库函数
             if(AuxiliaryFunction.isLibraryFunction(l_token.getValueString())){
                 globalTable.add(new GlobalDef(l_token.getValueString(),1,l_token.getValueString().toCharArray()));
-                instruction=new Instruction(Operation.callname,globalOffset);
+                instruction=new Instruction(Operation.callname,globalOffset,4);
                 l_type=AuxiliaryFunction.getTypeofLibrary(l_token.getValueString());
                 //这里的functionName表示库函数
                 functionName=new FunctionDef(globalOffset,l_token.getValueString(),-1);
@@ -345,7 +345,7 @@ public final class Analyser {
                 globalOffset++;
             }
             else if(functionName!=null){
-                instruction=new Instruction(Operation.call,functionName.getFunctionID());
+                instruction=new Instruction(Operation.call,functionName.getFunctionID(),4);
                 l_type=functionName.getType();
             }
             else{
@@ -353,10 +353,10 @@ public final class Analyser {
             }
 
             if(functionName.getType()==Type.VOID){
-                instructionList.add(new Instruction(Operation.stackalloc,0));
+                instructionList.add(new Instruction(Operation.stackalloc,0,4));
             }
             else {
-                instructionList.add(new Instruction(Operation.stackalloc,1));
+                instructionList.add(new Instruction(Operation.stackalloc,1,4));
             }
 
             //分析参数列表
@@ -425,16 +425,16 @@ public final class Analyser {
             if(symbol!=null){
                 //判断是否是全局变量
                 if(symbol.getLevel()==0){
-                    instructionList.add(new Instruction(Operation.globa,symbol.getOffset()));
+                    instructionList.add(new Instruction(Operation.globa,symbol.getOffset(),4));
                 }
                 else{
-                    instructionList.add(new Instruction(Operation.loca,symbol.getOffset()));
+                    instructionList.add(new Instruction(Operation.loca,symbol.getOffset(),4));
                 }
                 instructionList.add(new Instruction(Operation.load));
                 l_type=symbol.getType();
             }
             else if(parameter!=null){
-                instructionList.add(new Instruction(Operation.arga,paramsOffset+parameter.getOffset()));
+                instructionList.add(new Instruction(Operation.arga,paramsOffset+parameter.getOffset(),4));
                 instructionList.add(new Instruction(Operation.load));
                 l_type=parameter.getType();
             }
@@ -455,12 +455,12 @@ public final class Analyser {
         Type type;
         Token token=next();
         if(token.getTokenType()==TokenType.UINT_LITERAL){
-            instructionList.add(new Instruction(Operation.push,(int)token.getValue()));
+            instructionList.add(new Instruction(Operation.push,(int)token.getValue(),4));
             type=Type.INT;
         }
         else{
             globalTable.add(new GlobalDef(token.getValueString(),1));
-            instructionList.add(new Instruction(Operation.push,globalOffset));
+            instructionList.add(new Instruction(Operation.push,globalOffset,8));
             globalOffset++;
             type=Type.STRING;
         }
@@ -581,9 +581,9 @@ public final class Analyser {
             if(check(TokenType.ASSIGN)) {
                 next();
                 if (level == 0) {
-                    globalInstructionList.add(new Instruction(Operation.globa, globalOffset));
+                    globalInstructionList.add(new Instruction(Operation.globa, globalOffset,4));
                 } else {
-                    instructionList.add(new Instruction(Operation.loca,localOffset));
+                    instructionList.add(new Instruction(Operation.loca,localOffset,4));
                 }
 
                 Type r_type = analyseExpression();
@@ -620,7 +620,7 @@ public final class Analyser {
                 }
                 symbolTable.add(new Symbol(true,true,globalOffset,ident.getValueString(),l_type,level));
                 globalTable.add(new GlobalDef(ident.getValueString(),1));
-                globalInstructionList.add(new Instruction(Operation.globa, globalOffset));
+                globalInstructionList.add(new Instruction(Operation.globa, globalOffset,4));
             }
             //局部常量
             else {
@@ -629,7 +629,7 @@ public final class Analyser {
                 }
 
                 symbolTable.add(new Symbol(true,true,globalOffset,ident.getValueString(),l_type,level));
-                instructionList.add(new Instruction(Operation.loca,localOffset));
+                instructionList.add(new Instruction(Operation.loca,localOffset,4));
             }
 
             Type r_type = analyseExpression();
@@ -671,15 +671,15 @@ public final class Analyser {
             Instruction.addInstruction(stack.pop(),instructionList);
         }
 
-        instructionList.add(new Instruction(Operation.br_true,1));
-        Instruction jump_Instruction1=new Instruction(Operation.br,0);
+        instructionList.add(new Instruction(Operation.br_true,1,4));
+        Instruction jump_Instruction1=new Instruction(Operation.br,0,4);
         instructionList.add(jump_Instruction1);
         //记录下跳转开始前的位置
         int if_StartPos=instructionList.size();
 
         analyseBlockStmt(function);
 
-        Instruction jump_Instruction2=new Instruction(Operation.br,0);
+        Instruction jump_Instruction2=new Instruction(Operation.br,0,4);
         instructionList.add(jump_Instruction2);
         int else_StartPos=instructionList.size();
 
@@ -693,7 +693,7 @@ public final class Analyser {
             }
             else{
                 analyseBlockStmt(function);
-                instructionList.add(new Instruction(Operation.br,0));
+                instructionList.add(new Instruction(Operation.br,0,4));
             }
         }
 
@@ -719,15 +719,15 @@ public final class Analyser {
             Instruction.addInstruction(stack.pop(),instructionList);
         }
 
-        instructionList.add(new Instruction(Operation.br_true,1));
-        Instruction jump_instruction1=new Instruction(Operation.br,0);
+        instructionList.add(new Instruction(Operation.br_true,1,4));
+        Instruction jump_instruction1=new Instruction(Operation.br,0,4);
         instructionList.add(jump_instruction1);
 
         int Pos2=instructionList.size();
 
         analyseBlockStmt(function);
 
-        Instruction jump_instruction2=new Instruction(Operation.br,0);
+        Instruction jump_instruction2=new Instruction(Operation.br,0,4);
         instructionList.add(jump_instruction2);
 
         int Pos3=instructionList.size();
@@ -744,7 +744,7 @@ public final class Analyser {
         next();
         if(AuxiliaryFunction.isExpression(peek())){
             if(function.getType()==Type.INT||function.getType()==Type.DOUBLE){
-                instructionList.add(new Instruction(Operation.arga,0));
+                instructionList.add(new Instruction(Operation.arga,0,4));
                 Type type=analyseExpression();
                 if(function.getType()!=type){
                     throw new AnalyzeError(ErrorCode.TypeError);

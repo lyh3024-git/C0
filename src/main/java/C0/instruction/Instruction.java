@@ -8,20 +8,18 @@ import java.util.Objects;
 public class Instruction {
     private Operation opt;
     int x;
+    int ByteNum;
 
     public Instruction(Operation opt) {
         this.opt = opt;
         this.x = 0;
+        this.ByteNum=0;
     }
 
-    public Instruction(Operation opt, int x) {
+    public Instruction(Operation opt, int x,int ByteNum) {
         this.opt = opt;
         this.x = x;
-    }
-
-    public Instruction() {
-        this.opt = Operation.nop;
-        this.x = 0;
+        this.ByteNum=ByteNum;
     }
 
     @Override
@@ -54,6 +52,10 @@ public class Instruction {
     public void setX(int x) {
         this.x = x;
     }
+
+    public void setByteNum(int ByteNum) {this.ByteNum=ByteNum;}
+
+    public int getByteNum() {return this.ByteNum;}
 
     public static void addInstruction(TokenType tokenType, List<Instruction> instructionList){
         switch (tokenType){

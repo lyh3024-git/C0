@@ -62,7 +62,13 @@ public class App {
                 System.out.println(functionDef.getParam_slots());
                 System.out.println(functionDef.getReturn_slots());
                 for(Instruction instruction:functionDef.getInstructions()){
-                    System.out.println(instruction.getOpt());
+                    System.out.print(instruction.getOpt()+" ");
+                    if(instruction.getByteNum()!=0){
+                        System.out.println(instruction.getX());
+                    }
+                    else {
+                        System.out.println(" ");
+                    }
                 }
             }
 
@@ -96,11 +102,11 @@ public class App {
 
                 for(Instruction instruction:instructions){
                     Output.add(ByteIntToBytes(instruction.getOpt().getByte()));
-                    if(instruction.getOpt()== Operation.push){
-                        Output.addAll(LongToBytes(instruction.getX()));
-                    }
-                    else{
+                    if(instruction.getByteNum()==4){
                         Output.addAll(IntToBytes(instruction.getX()));
+                    }
+                    else if(instruction.getByteNum()==8){
+                        Output.addAll(LongToBytes(instruction.getX()));
                     }
                 }
             }
