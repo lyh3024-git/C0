@@ -39,7 +39,7 @@ public class App {
                 globalTable = analyser.getGlobalTable();
                 functionTable = analyser.getFunctionTable();
                 for (GlobalDef globalDef : globalTable) {
-                    System.out.println(globalDef);
+                    System.out.println(globalDef.getName());
                 }
 
                 functionTable.sort(new Comparator<FunctionDef>() {
@@ -49,7 +49,7 @@ public class App {
                     }
                 });
                 for (FunctionDef functionDef : functionTable) {
-                    System.out.println(functionDef);
+                    System.out.println(functionDef.getName());
                 }
 
                 Output.addAll(IntToBytes(0x72303b3e));

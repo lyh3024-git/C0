@@ -1,5 +1,7 @@
-[jobs.C0]
-image = {source = "dockerfile", path = ".", tag = "C0"}
+[jobs.c0]
+
+image = { source = "dockerfile", path = ".", tag = "pascal-lex-example" }
+
 run = [
-  "java -jar build/libs/C0.jar -l $input -o $asm",
+  "java src/App $input $asm",
 ]
