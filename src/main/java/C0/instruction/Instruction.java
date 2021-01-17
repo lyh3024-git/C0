@@ -59,31 +59,28 @@ public class Instruction {
         switch (tokenType){
             case EQ:
                 instructionList.add(new Instruction(Operation.cmp));
-                instructionList.add(new Instruction(Operation.br_false,1));
+                instructionList.add(new Instruction(Operation.not));
                 break;
             case NEQ:
                 instructionList.add(new Instruction(Operation.cmp));
-                instructionList.add(new Instruction(Operation.br_true,1));
                 break;
             case GT:
                 instructionList.add(new Instruction(Operation.cmp));
                 instructionList.add(new Instruction(Operation.set_gt));
-                instructionList.add(new Instruction(Operation.br_true,1));
                 break;
             case LT:
                 instructionList.add(new Instruction(Operation.cmp));
                 instructionList.add(new Instruction(Operation.set_lt));
-                instructionList.add(new Instruction(Operation.br_true,1));
                 break;
             case GE:
                 instructionList.add(new Instruction(Operation.cmp));
                 instructionList.add(new Instruction(Operation.set_lt));
-                instructionList.add(new Instruction(Operation.br_false,1));
+                instructionList.add(new Instruction(Operation.not));
                 break;
             case LE:
                 instructionList.add(new Instruction(Operation.cmp));
                 instructionList.add(new Instruction(Operation.set_gt));
-                instructionList.add(new Instruction(Operation.br_false,1));
+                instructionList.add(new Instruction(Operation.not));
                 break;
             case PLUS:
                 instructionList.add(new Instruction(Operation.add));

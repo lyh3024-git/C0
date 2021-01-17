@@ -4,6 +4,7 @@ import C0.error.AnalyzeError;
 import C0.error.CompileError;
 import C0.error.ErrorCode;
 import C0.struct.FunctionDef;
+import C0.struct.GlobalDef;
 import C0.struct.Parameter;
 import C0.struct.Symbol;
 import C0.tokenizer.Token;
@@ -146,13 +147,13 @@ public class AuxiliaryFunction {
 
     /**
      * 判断是否是函数名，用于判断变量名是否和函数名重名
-     * @param functionTable
+     * @param globalTable
      * @param name
      * @return
      */
-    public static boolean isFunctionName(List<FunctionDef> functionTable,String name){
-        for(FunctionDef functionDef:functionTable){
-            if(name.equals(functionDef.getName())){
+    public static boolean isDefinedGlobal(List<GlobalDef> globalTable, String name){
+        for(GlobalDef globalDef:globalTable){
+            if(name.equals(globalDef.getName())){
                 return true;
             }
         }

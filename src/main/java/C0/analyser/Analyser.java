@@ -47,6 +47,9 @@ public final class Analyser {
     /** 当前所在的层次 */
     int level = 0;
 
+    /** 表示函数是否有返回值 */
+    int paramsOffset=0;
+
     /**
      * 表示函数的顺序编号
      * 在使用call指令时使用
@@ -161,7 +164,7 @@ public final class Analyser {
             throw new AnalyzeError(ErrorCode.NoMain);
         }
         //添加_start
-        globalTable.add(new GlobalDef("_start",1));
+        globalTable.add(new GlobalDef("_start",1,"_start".toCharArray()));
         if(mainFunction.getType()==Type.VOID){
             globalInstructionList.add(new Instruction(Operation.stackalloc,0));
             globalInstructionList.add(new Instruction(Operation.call,mainFunction.getFunctionID()));
@@ -303,7 +306,7 @@ public final class Analyser {
                 if(parameter.getType()==Type.VOID){
                     throw new AnalyzeError(ErrorCode.InvalidAssignment,l_token.getStartPos());
                 }
-                instructionList.add(new Instruction(Operation.arga,parameter.getOffset()));
+                instructionList.add(new Instruction(Operation.arga,paramsOffset+parameter.getOffset()));
             }
             else {
                 throw new AnalyzeError(ErrorCode.NotDeclared,l_token.getStartPos());
@@ -431,7 +434,7 @@ public final class Analyser {
                 l_type=symbol.getType();
             }
             else if(parameter!=null){
-                instructionList.add(new Instruction(Operation.arga,parameter.getOffset()));
+                instructionList.add(new Instruction(Operation.arga,paramsOffset+parameter.getOffset()));
                 instructionList.add(new Instruction(Operation.load));
                 l_type=parameter.getType();
             }
@@ -549,7 +552,7 @@ public final class Analyser {
 
             //全局变量
             if(level==0){
-                if(AuxiliaryFunction.isFunctionName(functionTable,ident.getValueString())){
+                if(AuxiliaryFunction.isDefinedGlobal(globalTable,ident.getValueString())){
                     throw new AnalyzeError(ErrorCode.DuplicateDeclaration,ident.getStartPos());
                 }
                 globalTable.add(new GlobalDef((String)ident.getValue(),0));
@@ -612,7 +615,7 @@ public final class Analyser {
 
             //全局常量
             if (level == 0) {
-                if(AuxiliaryFunction.isFunctionName(functionTable,ident.getValueString())){
+                if(AuxiliaryFunction.isDefinedGlobal(globalTable,ident.getValueString())){
                     throw new AnalyzeError(ErrorCode.DuplicateDeclaration,ident.getStartPos());
                 }
                 symbolTable.add(new Symbol(true,true,globalOffset,ident.getValueString(),l_type,level));
@@ -668,6 +671,7 @@ public final class Analyser {
             Instruction.addInstruction(stack.pop(),instructionList);
         }
 
+        instructionList.add(new Instruction(Operation.br_true,1));
         Instruction jump_Instruction1=new Instruction(Operation.br,0);
         instructionList.add(jump_Instruction1);
         //记录下跳转开始前的位置
@@ -715,6 +719,7 @@ public final class Analyser {
             Instruction.addInstruction(stack.pop(),instructionList);
         }
 
+        instructionList.add(new Instruction(Operation.br_true,1));
         Instruction jump_instruction1=new Instruction(Operation.br,0);
         instructionList.add(jump_instruction1);
 
@@ -798,6 +803,7 @@ public final class Analyser {
      * @throws CompileError
      */
     private void analyseFunction() throws CompileError{
+        paramsOffset=0;
         localOffset=0;
         instructionList.clear();
         parameterList.clear();
@@ -805,7 +811,7 @@ public final class Analyser {
         //name保存函数名的IDENT
         Token ident=expect(TokenType.IDENT);
         expect(TokenType.L_PAREN);
-        if(AuxiliaryFunction.isFunctionName(functionTable,ident.getValueString())){
+        if(AuxiliaryFunction.isDefinedGlobal(globalTable,ident.getValueString())){
             throw new AnalyzeError(ErrorCode.DuplicateDeclaration,ident.getStartPos());
         }
 
@@ -849,6 +855,7 @@ public final class Analyser {
             function.setReturn_slots(0);
         }
         else{
+            paramsOffset=1;
             function.setReturn_slots(1);
             function.setParam_slots(function.getParam_slots()+1);
         }
