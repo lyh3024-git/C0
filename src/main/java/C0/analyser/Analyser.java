@@ -837,6 +837,7 @@ public final class Analyser {
                         throw new AnalyzeError(ErrorCode.DuplicateDeclaration,paramName.getStartPos());
                     }
                 }
+                expect(TokenType.COLON);
                 paramType=AuxiliaryFunction.getType(next());
                 parameterList.add(new Parameter(paramName.getValueString(),paramType,paramSize));
                 paramSize++;
@@ -857,7 +858,6 @@ public final class Analyser {
         else{
             paramsOffset=1;
             function.setReturn_slots(1);
-            function.setParam_slots(function.getParam_slots()+1);
         }
 
         functionTable.add(function);
