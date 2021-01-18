@@ -257,10 +257,8 @@
 
 package C0.tokenizer;
 
-import C0.tokenizer.Token;
-import C0.tokenizer.TokenType;
-import C0.error.TokenizeError;
 import C0.error.ErrorCode;
+import C0.error.TokenizeError;
 import C0.util.Pos;
 
 public class Tokenizer {
@@ -318,7 +316,7 @@ public class Tokenizer {
         }
         */
         Pos end = it.currentPos();
-        return new Token(TokenType.UINT_LITERAL, Long.parseLong(tempToken), start, end);
+        return new Token(TokenType.UINT_LITERAL, Integer.parseInt(tempToken), start, end);
     }
 
 
