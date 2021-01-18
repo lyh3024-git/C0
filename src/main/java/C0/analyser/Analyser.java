@@ -798,7 +798,7 @@ public final class Analyser {
         localOffset=0;
         instructionList.clear();
         parameterList.clear();
-        next();
+        expect(TokenType.FN_KW);
         //name保存函数名的IDENT
         Token ident=expect(TokenType.IDENT);
         expect(TokenType.L_PAREN);
@@ -858,7 +858,7 @@ public final class Analyser {
         if(function.getType()==Type.VOID){
             instructionList.add(new Instruction(Operation.ret));
         }
-        globalTable.add(new GlobalDef((String)function.getName(),0,function.getName().toCharArray()));
+        globalTable.add(new GlobalDef((String)function.getName(),1,function.getName().toCharArray()));
 
 
         function.setLoc_slots(localOffset);
