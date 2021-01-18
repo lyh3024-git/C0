@@ -207,7 +207,7 @@ public final class Analyser {
      * @throws CompileError
      */
     private Type analyseExpression() throws CompileError{
-        Type type1;
+        Type type1=Type.VOID;
         if(check(TokenType.MINUS)){
             type1=analyseNegateExpression();
         }
@@ -219,9 +219,6 @@ public final class Analyser {
         }
         else if(check(TokenType.L_PAREN)){
             type1=analyseGroupExpression();
-        }
-        else{
-            throw new ExpectedTokenError(List.of(TokenType.MINUS, TokenType.IDENT, TokenType.UINT_LITERAL,TokenType.STRING_LITERAL,TokenType.L_PAREN),next());
         }
         while(AuxiliaryFunction.isBinaryOperation(peek().getTokenType())||check(TokenType.AS_KW)){
             if(AuxiliaryFunction.isBinaryOperation(peek().getTokenType())){
