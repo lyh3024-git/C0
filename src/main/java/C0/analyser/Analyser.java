@@ -223,19 +223,25 @@ public final class Analyser {
         else{
             throw new ExpectedTokenError(List.of(TokenType.MINUS, TokenType.IDENT, TokenType.UINT_LITERAL,TokenType.STRING_LITERAL,TokenType.L_PAREN),next());
         }
-        while(AuxiliaryFunction.isBinaryOperation(peek().getTokenType())){
-            Token operator=next();
-            if(!stack.empty()){
-                int first=OperatorPrecedence.getOffset(stack.peek());
-                int second=OperatorPrecedence.getOffset(operator.getTokenType());
-                if(OperatorPrecedence.getPriority(first,second)>0){
-                    Instruction.addInstruction(stack.pop(),instructionList);
+        while(AuxiliaryFunction.isBinaryOperation(peek().getTokenType())||check(TokenType.AS_KW)){
+            if(AuxiliaryFunction.isBinaryOperation(peek().getTokenType())){
+                Token operator=next();
+                if(!stack.empty()){
+                    int first=OperatorPrecedence.getOffset(stack.peek());
+                    int second=OperatorPrecedence.getOffset(operator.getTokenType());
+                    if(OperatorPrecedence.getPriority(first,second)>0){
+                        Instruction.addInstruction(stack.pop(),instructionList);
+                    }
+                }
+                stack.push(operator.getTokenType());
+                Type type2=analyseExpression();
+                if(type1!=type2){
+                    throw new AnalyzeError(ErrorCode.TypeError,operator.getStartPos());
                 }
             }
-            stack.push(operator.getTokenType());
-            Type type2=analyseExpression();
-            if(type1!=type2){
-                throw new AnalyzeError(ErrorCode.TypeError,operator.getStartPos());
+            else{
+                expect(TokenType.ASSIGN);
+                AuxiliaryFunction.getType(next());
             }
         }
         return type1;
@@ -248,10 +254,14 @@ public final class Analyser {
      * @throws CompileError
      */
     private Type analyseNegateExpression() throws CompileError{
-        next();
+        expect(TokenType.MINUS);
         Type type=analyseExpression();
         if(type==Type.INT){
-            instructionList.add(new Instruction(Operation.neg));
+            if (level==0){
+                globalInstructionList.add(new Instruction(Operation.neg));
+            }else {
+                instructionList.add(new Instruction(Operation.neg));
+            }
         }
         else {
             throw new AnalyzeError(ErrorCode.TypeError,peek().getStartPos());
@@ -321,7 +331,9 @@ public final class Analyser {
             }
 
             while(!stack.empty()){
-                Instruction.addInstruction(stack.pop(),instructionList);
+                if(l_type==Type.INT){
+                    Instruction.addInstruction(stack.pop(),instructionList);
+                }
             }
 
             instructionList.add(new Instruction(Operation.store));
@@ -448,12 +460,20 @@ public final class Analyser {
         Type type;
         Token token=next();
         if(token.getTokenType()==TokenType.UINT_LITERAL){
-            instructionList.add(new Instruction(Operation.push,(Integer) token.getValue(),4));
+            if (level==0){
+                globalInstructionList.add(new Instruction(Operation.push,(Long)token.getValue(),8));
+            }else {
+                instructionList.add(new Instruction(Operation.push,(Long)token.getValue(),8));
+            }
             type=Type.INT;
         }
         else{
             globalTable.add(new GlobalDef(token.getValueString(),1,token.getValueString().toCharArray()));
-            instructionList.add(new Instruction(Operation.push,globalOffset,8));
+            if (level==0){
+                globalInstructionList.add(new Instruction(Operation.push,globalOffset,8));
+            }else {
+                instructionList.add(new Instruction(Operation.push,globalOffset,8));
+            }
             globalOffset++;
             type=Type.STRING;
         }
@@ -515,6 +535,13 @@ public final class Analyser {
         }
         else if(check(TokenType.L_BRACE)){
             analyseBlockStmt(function);
+        }
+        else if(check(TokenType.BREAK_KW)){
+            expect(TokenType.BREAK_KW);
+        }
+        else if(check(TokenType.CONTINUE_KW)){
+            expect(TokenType.CONTINUE_KW);
+            expect(TokenType.SEMICOLON);
         }
         else if(check(TokenType.SEMICOLON)){
             analyseEmptyStmt();
@@ -589,12 +616,17 @@ public final class Analyser {
                     Instruction.addInstruction(stack.pop(),instructionList);
                 }
 
-                instructionList.add(new Instruction(Operation.store));
+                if(level==0){
+                    globalInstructionList.add(new Instruction(Operation.store));
+                }
+                else {
+                    instructionList.add(new Instruction(Operation.store));
+                }
             }
             expect(TokenType.SEMICOLON);
         }
         //常量
-        else{
+        else if(check(TokenType.CONST_KW)){
             next();
             Token ident=expect(TokenType.IDENT);
 
@@ -635,7 +667,12 @@ public final class Analyser {
                 Instruction.addInstruction(stack.pop(),instructionList);
             }
 
-            instructionList.add(new Instruction(Operation.store));
+            if (level==0){
+                globalInstructionList.add(new Instruction(Operation.store));
+            }
+            else {
+                instructionList.add(new Instruction(Operation.store));
+            }
 
             expect(TokenType.SEMICOLON);
 
@@ -692,7 +729,8 @@ public final class Analyser {
             }
         }
 
-        jump_Instruction2.setX(instructionList.size()-else_StartPos);
+        int jump_size2=instructionList.size()-else_StartPos;
+        jump_Instruction2.setX(jump_size2);
     }
 
     /**
@@ -764,7 +802,7 @@ public final class Analyser {
      * @throws CompileError
      */
     private void analyseBlockStmt(FunctionDef function) throws CompileError{
-        next();
+        expect(TokenType.L_BRACE);
         //进入语句块,层数++
         level++;
         while(AuxiliaryFunction.isStatement(peek())){
