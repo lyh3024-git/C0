@@ -167,12 +167,12 @@ public final class Analyser {
         globalTable.add(new GlobalDef("_start",1,"_start".toCharArray()));
         if(mainFunction.getType()==Type.VOID){
             globalInstructionList.add(new Instruction(Operation.stackalloc,0,4));
-            globalInstructionList.add(new Instruction(Operation.call,mainFunction.getFunctionID(),4));
+            globalInstructionList.add(new Instruction(Operation.call,functionID-1,4));
         }
         else{
             //如果main函数的返回值非空则分配一个slot来存放返回值
             globalInstructionList.add(new Instruction(Operation.stackalloc,1,4));
-            globalInstructionList.add(new Instruction(Operation.call,mainFunction.getFunctionID(),4));
+            globalInstructionList.add(new Instruction(Operation.call,functionID-1,4));
             globalInstructionList.add(new Instruction(Operation.popn,1,4));
         }
         functionTable.add(new FunctionDef(globalOffset,0,0,0,globalInstructionList,"_start",null,Type.VOID,0));
@@ -278,9 +278,9 @@ public final class Analyser {
         if(check(TokenType.ASSIGN)){
             next();
             //是否是定义的变量
-            Symbol symbol=AuxiliaryFunction.isDefinedSymbol(symbolTable,level,(String)l_token.getValue());
+            Symbol symbol=AuxiliaryFunction.isDefinedSymbol(symbolTable,level,l_token.getValueString());
             //是否是函数的参数
-            Parameter parameter=AuxiliaryFunction.isParameter(parameterList,(String)l_token.getValue());
+            Parameter parameter=AuxiliaryFunction.isParameter(parameterList,l_token.getValueString());
             if(symbol!=null){
                 l_type=symbol.getType();
                 //如果是常量
@@ -303,7 +303,7 @@ public final class Analyser {
             else if(parameter!=null){
                 l_type=parameter.getType();
                 //如果参数的类型为void
-                if(parameter.getType()==Type.VOID){
+                if(l_type==Type.VOID){
                     throw new AnalyzeError(ErrorCode.InvalidAssignment,l_token.getStartPos());
                 }
                 instructionList.add(new Instruction(Operation.arga,paramsOffset+parameter.getOffset(),4));
@@ -372,9 +372,9 @@ public final class Analyser {
         //标识符表达式
         else {
             //是否是定义的变量
-            Symbol symbol=AuxiliaryFunction.isDefinedSymbol(symbolTable,level,(String)l_token.getValue());
+            Symbol symbol=AuxiliaryFunction.isDefinedSymbol(symbolTable,level,l_token.getValueString());
             //是否是函数的参数
-            Parameter parameter=AuxiliaryFunction.isParameter(parameterList,(String)l_token.getValue());
+            Parameter parameter=AuxiliaryFunction.isParameter(parameterList,l_token.getValueString());
             if(symbol!=null){
                 //判断是否是全局变量
                 if(symbol.getLevel()==0){
@@ -464,7 +464,7 @@ public final class Analyser {
      * @throws CompileError
      */
     private Type analyseGroupExpression() throws CompileError{
-        next();
+        expect(TokenType.L_PAREN);
         stack.push(TokenType.L_PAREN);
         Type type=analyseExpression();
         expect(TokenType.R_PAREN);
@@ -473,6 +473,7 @@ public final class Analyser {
             Instruction.addInstruction(stack.pop(),instructionList);
         }
 
+        stack.pop();
         return type;
     }
 

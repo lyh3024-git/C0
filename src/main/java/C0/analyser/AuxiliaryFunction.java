@@ -25,7 +25,7 @@ public class AuxiliaryFunction {
         return tokenType == TokenType.MINUS || tokenType == TokenType.PLUS || tokenType == TokenType.MUL ||
                 tokenType == TokenType.DIV || tokenType == TokenType.EQ || tokenType == TokenType.NEQ ||
                 tokenType == TokenType.LT || tokenType == TokenType.GT || tokenType == TokenType.LE ||
-                tokenType == TokenType.GE;
+                tokenType == TokenType.GE || tokenType==TokenType.ASSIGN;
     }
 
     /**
