@@ -312,7 +312,10 @@ public final class Analyser {
                 throw new AnalyzeError(ErrorCode.NotDeclared,l_token.getStartPos());
             }
 
-            Type r_type=analyseExpression();
+            Type r_type=null;
+            if(AuxiliaryFunction.isExpression(peek())){
+                r_type=analyseExpression();
+            }
             if(l_type!=r_type){
                 throw new AnalyzeError(ErrorCode.TypeError,l_token.getStartPos());
             }
@@ -449,7 +452,7 @@ public final class Analyser {
             type=Type.INT;
         }
         else{
-            globalTable.add(new GlobalDef(token.getValueString(),1));
+            globalTable.add(new GlobalDef(token.getValueString(),1,token.getValueString().toCharArray()));
             instructionList.add(new Instruction(Operation.push,globalOffset,8));
             globalOffset++;
             type=Type.STRING;
