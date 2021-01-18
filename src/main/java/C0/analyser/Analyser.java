@@ -445,7 +445,7 @@ public final class Analyser {
         Type type;
         Token token=next();
         if(token.getTokenType()==TokenType.UINT_LITERAL){
-            instructionList.add(new Instruction(Operation.push,(int)token.getValue(),4));
+            instructionList.add(new Instruction(Operation.push,(Integer) token.getValue(),4));
             type=Type.INT;
         }
         else{
