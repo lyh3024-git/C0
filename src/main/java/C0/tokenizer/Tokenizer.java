@@ -563,232 +563,6 @@ import C0.util.Pos;
 //    }
 //}
 
-//public class Tokenizer {
-//
-//    private StringIter it;
-//
-//    public Tokenizer(StringIter it) {
-//        this.it = it;
-//    }
-//
-//    // 这里本来是想实现 Iterator<Token> 的，但是 Iterator 不允许抛异常，于是就这样了
-//    /**
-//     * 获取下一个 Token
-//     *
-//     * @return
-//     * @throws TokenizeError 如果解析有异常则抛出
-//     */
-//    public Token nextToken() throws TokenizeError {
-//        it.readAll();
-//
-//        // 跳过之前的所有空白字符
-//        skipSpaceCharacters();
-//
-//        if (it.isEOF()) {
-//            return new Token(TokenType.EOF, "", it.currentPos(), it.currentPos());
-//        }
-//
-//        char peek = it.peekChar();
-//        if (Character.isDigit(peek)) {
-//            return lexUInt();
-//        } else if (Character.isAlphabetic(peek)||peek=='_') {
-//            return lexIdentOrKeyword();
-//        } else if (peek=='\"'){
-//            return lexString();
-//        } else {
-//            Token token=lexOperatorOrUnknown();
-//            if (token==null) return nextToken();
-//            return token;
-//        }
-//    }
-//    private Token lexString() throws  TokenizeError{
-//        Pos begin=it.currentPos();
-//        it.nextChar();
-//        char ch;
-//        String temp=new String();
-//        while ((ch=it.peekChar())!='"'){
-//            if (it.isEOF()){
-//                throw new TokenizeError(ErrorCode.InvalidInput, begin);
-//            }
-//            if (ch=='\\'){
-//                it.nextChar();
-//                if ((ch=it.peekChar())=='\\'){
-//                    temp+='\\';
-//                }
-//                else if (ch=='\'') temp+='\'';
-//                else if (ch == '\"') temp += '\"';
-//                else if (ch == 'n') temp += '\n';
-//                else if (ch == 't') temp += '\t';
-//                else if (ch == 'r') temp += '\r';
-//                else throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
-//            }
-//            else {
-//                temp+=ch;
-//            }
-//            it.nextChar();
-//        }
-//        it.nextChar();
-//        return new Token(TokenType.STRING_LITERAL,temp,begin,it.currentPos());
-//    }
-//    private Token lexUInt() throws TokenizeError {
-//        // 请填空：
-//        // 直到查看下一个字符不是数字为止:
-//        Pos begin=it.currentPos();
-//        String temp=new String();
-//        temp+=it.nextChar();
-//        while(Character.isDigit(it.peekChar())){
-//            temp+=it.nextChar();
-//        }
-//        long a=0;
-//        a=Long.parseLong(temp);
-//
-//        return new Token(TokenType.UINT_LITERAL, a, begin, it.currentPos());
-//        // -- 前进一个字符，并存储这个字符
-//        //
-//        // 解析存储的字符串为无符号整数
-//        // 解析成功则返回无符号整数类型的token，否则返回编译错误
-//        //
-//        // Token 的 Value 应填写数字的值
-//
-//    }
-//
-//    private Token lexIdentOrKeyword() throws TokenizeError {
-//        // 请填空：
-//        Pos begin=it.currentPos();
-//        String temp=new String();
-//        boolean is_ident=false;
-//        if (it.peekChar()=='_') is_ident=true;
-//        temp+=it.nextChar();
-//        if (Character.isDigit(it.peekChar())&&is_ident){
-//            throw new TokenizeError(ErrorCode.InvalidIdentifier,begin);
-//        }
-//        while (true){
-//            if (Character.isLetter(it.peekChar())){
-//                temp+=it.nextChar();
-//            }
-//            else if (Character.isDigit(it.peekChar())||it.peekChar()=='_'){
-//                is_ident=true;
-//                temp+=it.nextChar();
-//            }
-//            else break;
-//        }
-//
-//        if (is_ident){
-//            return new Token(TokenType.IDENT,temp,begin,it.currentPos());
-//        }
-//        switch (temp){
-//            case "fn":
-//                return new Token(TokenType.FN_KW,temp,begin,it.currentPos());
-//            case "let":
-//                return new Token(TokenType.LET_KW,temp,begin,it.currentPos());
-//            case "const" :
-//                return new Token(TokenType.CONST_KW,temp,begin,it.currentPos());
-//            case "as" :
-//                return new Token(TokenType.AS_KW,temp,begin,it.currentPos());
-//            case "while" :
-//                return new Token(TokenType.WHILE_KW,temp,begin,it.currentPos());
-//            case "if" :
-//                return new Token(TokenType.IF_KW,temp,begin,it.currentPos());
-//            case "else" :
-//                return new Token(TokenType.ELSE_KW,temp,begin,it.currentPos());
-//            case "break":
-//                return new Token(TokenType.BREAK_KW,temp,begin,it.currentPos());
-//            case "return" :
-//                return new Token(TokenType.RETURN_KW,temp,begin,it.currentPos());
-//            case "continue":
-//                return new Token(TokenType.CONTINUE_KW,temp,begin,it.currentPos());
-//            default:
-//                return new Token(TokenType.IDENT,temp,begin,it.currentPos());
-//        }
-//        // 直到查看下一个字符不是数字或字母为止:
-//        // -- 前进一个字符，并存储这个字符
-//        //
-//        // 尝试将存储的字符串解释为关键字
-//        // -- 如果是关键字，则返回关键字类型的 token
-//        // -- 否则，返回标识符
-//        //
-//        // Token 的 Value 应填写标识符或关键字的字符串
-//    }
-//
-//    private Token lexOperatorOrUnknown() throws TokenizeError {
-//        switch (it.nextChar()) {
-//            case '+':
-//                return new Token(TokenType.PLUS, "+", it.previousPos(), it.currentPos());
-//            case '-':
-//                if (it.peekChar() == '>') {
-//                    it.nextChar();
-//                    return new Token(TokenType.ARROW, "->", it.previousPos(), it.currentPos());
-//                } else {
-//                    return new Token(TokenType.MINUS, "-", it.previousPos(), it.currentPos());
-//                }
-//            case '*':
-//                return new Token(TokenType.MUL, "*", it.previousPos(), it.currentPos());
-//            case '=':
-//                if (it.peekChar() == '=') {
-//                    it.nextChar();
-//                    return new Token(TokenType.EQ, "==", it.previousPos(), it.currentPos());
-//                } else {
-//                    return new Token(TokenType.ASSIGN, "=", it.previousPos(), it.currentPos());
-//                }
-//            case '/':
-//                if (it.peekChar() == '/') {
-//                    skipComment();
-//                    return null;
-//                } else {
-//                    return new Token(TokenType.DIV, "/", it.previousPos(), it.currentPos());
-//                }
-//            case '!':
-//                if (it.peekChar() == '=') {
-//                    it.nextChar();
-//                    return new Token(TokenType.NEQ, "!=", it.previousPos(), it.currentPos());
-//                } else {
-//                    throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
-//                }
-//            case '<':
-//                if (it.peekChar() == '=') {
-//                    it.nextChar();
-//                    return new Token(TokenType.LE, "<=", it.previousPos(), it.currentPos());
-//                } else {
-//                    return new Token(TokenType.LT, "<", it.previousPos(), it.currentPos());
-//                }
-//            case '>':
-//                if (it.peekChar() == '=') {
-//                    it.nextChar();
-//                    return new Token(TokenType.GE, ">=", it.previousPos(), it.currentPos());
-//                } else {
-//                    return new Token(TokenType.GT, ">", it.previousPos(), it.currentPos());
-//                }
-//            case '(':
-//                return new Token(TokenType.L_PAREN, "(", it.previousPos(), it.currentPos());
-//            case ')':
-//                return new Token(TokenType.R_PAREN, ")", it.previousPos(), it.currentPos());
-//            case '{':
-//                return new Token(TokenType.L_BRACE, "{", it.previousPos(), it.currentPos());
-//            case '}':
-//                return new Token(TokenType.R_BRACE, "}", it.previousPos(), it.currentPos());
-//            case ',':
-//                return new Token(TokenType.COMMA, ",", it.previousPos(), it.currentPos());
-//            case ':':
-//                return new Token(TokenType.COLON, ":", it.previousPos(), it.currentPos());
-//            case ';':
-//                return new Token(TokenType.SEMICOLON, ";", it.previousPos(), it.currentPos());
-//            default:
-//                throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
-//        }
-//    }
-//
-//    private void skipSpaceCharacters() {
-//        while (!it.isEOF() && Character.isWhitespace(it.peekChar())) {
-//            it.nextChar();
-//        }
-//    }
-//
-//    private void skipComment() {
-//        it.nextChar();
-//        while (it.peekChar() != '\n') it.nextChar();
-//    }
-//}
-
 public class Tokenizer {
 
     private StringIter it;
@@ -798,11 +572,6 @@ public class Tokenizer {
     }
 
     // 这里本来是想实现 Iterator<Token> 的，但是 Iterator 不允许抛异常，于是就这样了
-
-    public StringIter getIt() {
-        return it;
-    }
-
     /**
      * 获取下一个 Token
      *
@@ -810,22 +579,10 @@ public class Tokenizer {
      * @throws TokenizeError 如果解析有异常则抛出
      */
     public Token nextToken() throws TokenizeError {
-        Token re;
         it.readAll();
 
         // 跳过之前的所有空白字符
         skipSpaceCharacters();
-        /** 单独考虑注释 直接过滤掉*/
-        while(it.peekChar()=='/') {
-            it.nextChar();
-            if (it.peekChar() == '/') {
-                it.nextChar();
-                skipComment();
-            } else {
-                return new Token(TokenType.DIV, '/', it.previousPos(), it.currentPos());
-            }
-            skipSpaceCharacters();
-        }
 
         if (it.isEOF()) {
             return new Token(TokenType.EOF, "", it.currentPos(), it.currentPos());
@@ -833,211 +590,189 @@ public class Tokenizer {
 
         char peek = it.peekChar();
         if (Character.isDigit(peek)) {
-            re =  lexUInt();
+            return lexUInt();
         } else if (Character.isAlphabetic(peek)||peek=='_') {
-            re = lexIdentOrKeyword();
-        }else if (peek=='"'){
-            re= lexString();
+            return lexIdentOrKeyword();
+        } else if (peek=='\"'){
+            return lexString();
+        } else {
+            Token token=lexOperatorOrUnknown();
+            if (token==null) return nextToken();
+            return token;
         }
-        else {
-            re= lexOperatorOrUnknown();
-        }
-//        System.out.print(re.getValueString()+" ");
-        return  re;
     }
-
+    private Token lexString() throws  TokenizeError{
+        Pos begin=it.currentPos();
+        it.nextChar();
+        char ch;
+        String temp=new String();
+        while ((ch=it.peekChar())!='"'){
+            if (it.isEOF()){
+                throw new TokenizeError(ErrorCode.InvalidInput, begin);
+            }
+            if (ch=='\\'){
+                it.nextChar();
+                if ((ch=it.peekChar())=='\\'){
+                    temp+='\\';
+                }
+                else if (ch=='\'') temp+='\'';
+                else if (ch == '\"') temp += '\"';
+                else if (ch == 'n') temp += '\n';
+                else if (ch == 't') temp += '\t';
+                else if (ch == 'r') temp += '\r';
+                else throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
+            }
+            else {
+                temp+=ch;
+            }
+            it.nextChar();
+        }
+        it.nextChar();
+        return new Token(TokenType.STRING_LITERAL,temp,begin,it.currentPos());
+    }
     private Token lexUInt() throws TokenizeError {
         // 请填空：
         // 直到查看下一个字符不是数字为止:
-        StringBuilder number = new StringBuilder();
-        Pos startpos = it.currentPos();
-        number.append(it.nextChar());
-        while (Character.isDigit(it.peekChar())) {
-            // -- 前进一个字符，并存储这个字符
-            number.append(it.nextChar());
+        Pos begin=it.currentPos();
+        String temp=new String();
+        temp+=it.nextChar();
+        while(Character.isDigit(it.peekChar())){
+            temp+=it.nextChar();
         }
+        long a=0;
+        a=Long.parseLong(temp);
+
+        return new Token(TokenType.UINT_LITERAL, a, begin, it.currentPos());
+        // -- 前进一个字符，并存储这个字符
         //
         // 解析存储的字符串为无符号整数
         // 解析成功则返回无符号整数类型的token，否则返回编译错误
         //
         // Token 的 Value 应填写数字的值
-        try {
-            Integer num = Integer.valueOf(number.toString());
-            return new Token(TokenType.UINT_LITERAL, num, startpos, it.currentPos());
-        } catch (Exception e) {
-            throw new TokenizeError(ErrorCode.InvalidInput, startpos);
-        }
+
     }
 
     private Token lexIdentOrKeyword() throws TokenizeError {
         // 请填空：
-        // 直到查看下一个字符不是数字或字母或_为止:
-        StringBuilder temp_token=new StringBuilder();
-        Pos startpos=it.currentPos();
-        do{
-            // -- 前进一个字符，并存储这个字符
-            temp_token.append(it.nextChar());
-        }while(Character.isAlphabetic(it.peekChar())||Character.isDigit(it.peekChar())||it.peekChar()=='_');
-        TokenType type;
-        String token=temp_token.toString();
-        try {
-            switch (token) {
-                case "fn": {
-                    type = TokenType.FN_KW;
-                    break;
-                }
-                case "let": {
-                    type = TokenType.LET_KW;
-                    break;
-                }
-                case "const": {
-                    type = TokenType.CONST_KW;
-                    break;
-                }
-                case "as": {
-                    type = TokenType.AS_KW;
-                    break;
-                }
-                case "while": {
-                    type = TokenType.WHILE_KW;
-                    break;
-                }
-                case "else": {
-                    type = TokenType.ELSE_KW;
-                    break;
-                }
-                case "if": {
-                    type = TokenType.IF_KW;
-                    break;
-                }
-                case "return": {
-                    type = TokenType.RETURN_KW;
-                    break;
-                }
-                default:
-                    type = TokenType.IDENT;
-            }
-            //
-            // Token 的 Value 应填写标识符或关键字的字符串
-            return new Token(type,token,startpos,it.currentPos());
-        }catch (Exception e) {
-            throw new TokenizeError(ErrorCode.InvalidInput, startpos);
+        Pos begin=it.currentPos();
+        String temp=new String();
+        boolean is_ident=false;
+        if (it.peekChar()=='_') is_ident=true;
+        temp+=it.nextChar();
+        if (Character.isDigit(it.peekChar())&&is_ident){
+            throw new TokenizeError(ErrorCode.InvalidIdentifier,begin);
         }
-    }
-
-    private Token lexString() throws TokenizeError {
-        StringBuilder str = new StringBuilder();
-        Pos startpos = it.currentPos();
-//        str.append(it.nextChar());
-        it.nextChar();
-        while (it.peekChar() != '"') {
-            if (it.peekChar() == '\\') { //转义字符
-                it.nextChar();
-
-                if (it.peekChar() == '\\'){
-                    str.append('\\');
-                }
-                else if (it.peekChar() == '\''){
-                    str.append('\'');
-                }
-                else if (it.peekChar() == '\"'){
-                    str.append('\"');
-                }
-                else if (it.peekChar() == 'n'){
-                    str.append('\n');
-                }
-                else if (it.peekChar() == 't'){
-                    str.append('\t');
-                }
-                else if (it.peekChar() == 'r'){
-                    str.append('\r');
-                }
-                else
-                    throw new TokenizeError(ErrorCode.InvalidInput, startpos);
-                it.nextChar();
+        while (true){
+            if (Character.isLetter(it.peekChar())){
+                temp+=it.nextChar();
             }
-            else {
-                str.append(it.nextChar());
+            else if (Character.isDigit(it.peekChar())||it.peekChar()=='_'){
+                is_ident=true;
+                temp+=it.nextChar();
             }
+            else break;
         }
-        it.nextChar();
-//        str.append(it.nextChar());
-        return new Token(TokenType.STRING_LITERAL, str.toString(), startpos, it.currentPos());
+
+        if (is_ident){
+            return new Token(TokenType.IDENT,temp,begin,it.currentPos());
+        }
+        switch (temp){
+            case "fn":
+                return new Token(TokenType.FN_KW,temp,begin,it.currentPos());
+            case "let":
+                return new Token(TokenType.LET_KW,temp,begin,it.currentPos());
+            case "const" :
+                return new Token(TokenType.CONST_KW,temp,begin,it.currentPos());
+            case "as" :
+                return new Token(TokenType.AS_KW,temp,begin,it.currentPos());
+            case "while" :
+                return new Token(TokenType.WHILE_KW,temp,begin,it.currentPos());
+            case "if" :
+                return new Token(TokenType.IF_KW,temp,begin,it.currentPos());
+            case "else" :
+                return new Token(TokenType.ELSE_KW,temp,begin,it.currentPos());
+            case "break":
+                return new Token(TokenType.BREAK_KW,temp,begin,it.currentPos());
+            case "return" :
+                return new Token(TokenType.RETURN_KW,temp,begin,it.currentPos());
+            case "continue":
+                return new Token(TokenType.CONTINUE_KW,temp,begin,it.currentPos());
+            default:
+                return new Token(TokenType.IDENT,temp,begin,it.currentPos());
+        }
+        // 直到查看下一个字符不是数字或字母为止:
+        // -- 前进一个字符，并存储这个字符
+        //
+        // 尝试将存储的字符串解释为关键字
+        // -- 如果是关键字，则返回关键字类型的 token
+        // -- 否则，返回标识符
+        //
+        // Token 的 Value 应填写标识符或关键字的字符串
     }
 
     private Token lexOperatorOrUnknown() throws TokenizeError {
         switch (it.nextChar()) {
             case '+':
-                return new Token(TokenType.PLUS, '+', it.previousPos(), it.currentPos());
-
+                return new Token(TokenType.PLUS, "+", it.previousPos(), it.currentPos());
             case '-':
-                // 填入返回语句
-                if(it.peekChar()=='>'){
+                if (it.peekChar() == '>') {
                     it.nextChar();
                     return new Token(TokenType.ARROW, "->", it.previousPos(), it.currentPos());
+                } else {
+                    return new Token(TokenType.MINUS, "-", it.previousPos(), it.currentPos());
                 }
-                return new Token(TokenType.MINUS, '-', it.previousPos(), it.currentPos());
-
             case '*':
-                // 填入返回语句
-                return new Token(TokenType.MUL, '*', it.previousPos(), it.currentPos());
-
-            case '/':
-                // 填入返回语句
-                return new Token(TokenType.DIV, '/', it.previousPos(), it.currentPos());
-            // 填入更多状态和返回语句
+                return new Token(TokenType.MUL, "*", it.previousPos(), it.currentPos());
             case '=':
-                // 填入返回语句
-                if(it.peekChar()=='=') {
+                if (it.peekChar() == '=') {
                     it.nextChar();
                     return new Token(TokenType.EQ, "==", it.previousPos(), it.currentPos());
+                } else {
+                    return new Token(TokenType.ASSIGN, "=", it.previousPos(), it.currentPos());
                 }
-                return new Token(TokenType.ASSIGN, '=', it.previousPos(), it.currentPos());
+            case '/':
+                if (it.peekChar() == '/') {
+                    skipComment();
+                    return null;
+                } else {
+                    return new Token(TokenType.DIV, "/", it.previousPos(), it.currentPos());
+                }
             case '!':
-                // 填入返回语句
-                if(it.peekChar()=='=') {
+                if (it.peekChar() == '=') {
                     it.nextChar();
                     return new Token(TokenType.NEQ, "!=", it.previousPos(), it.currentPos());
+                } else {
+                    throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
                 }
-                throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
             case '<':
-                // 填入返回语句
-                if(it.peekChar()=='=') {
+                if (it.peekChar() == '=') {
                     it.nextChar();
                     return new Token(TokenType.LE, "<=", it.previousPos(), it.currentPos());
+                } else {
+                    return new Token(TokenType.LT, "<", it.previousPos(), it.currentPos());
                 }
-                return new Token(TokenType.LT, '<', it.previousPos(), it.currentPos());
             case '>':
-                // 填入返回语句
-                if(it.peekChar()=='=') {
+                if (it.peekChar() == '=') {
                     it.nextChar();
                     return new Token(TokenType.GE, ">=", it.previousPos(), it.currentPos());
+                } else {
+                    return new Token(TokenType.GT, ">", it.previousPos(), it.currentPos());
                 }
-                return new Token(TokenType.GT, '>', it.previousPos(), it.currentPos());
             case '(':
-                // 填入返回语句
-                return new Token(TokenType.L_PAREN, '(', it.previousPos(), it.currentPos());
+                return new Token(TokenType.L_PAREN, "(", it.previousPos(), it.currentPos());
             case ')':
-                // 填入返回语句
-                return new Token(TokenType.R_PAREN, ')', it.previousPos(), it.currentPos());
+                return new Token(TokenType.R_PAREN, ")", it.previousPos(), it.currentPos());
             case '{':
-                // 填入返回语句
-                return new Token(TokenType.L_BRACE, '{', it.previousPos(), it.currentPos());
+                return new Token(TokenType.L_BRACE, "{", it.previousPos(), it.currentPos());
             case '}':
-                // 填入返回语句
-                return new Token(TokenType.R_BRACE, '}', it.previousPos(), it.currentPos());
+                return new Token(TokenType.R_BRACE, "}", it.previousPos(), it.currentPos());
             case ',':
-                // 填入返回语句
-                return new Token(TokenType.COMMA, ',', it.previousPos(), it.currentPos());
+                return new Token(TokenType.COMMA, ",", it.previousPos(), it.currentPos());
             case ':':
-                // 填入返回语句
-                return new Token(TokenType.COLON, ':', it.previousPos(), it.currentPos());
+                return new Token(TokenType.COLON, ":", it.previousPos(), it.currentPos());
             case ';':
-                // 填入返回语句
-                return new Token(TokenType.SEMICOLON, ';', it.previousPos(), it.currentPos());
-
+                return new Token(TokenType.SEMICOLON, ";", it.previousPos(), it.currentPos());
             default:
-                // 不认识这个输入，摸了
                 throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
         }
     }
@@ -1049,8 +784,8 @@ public class Tokenizer {
     }
 
     private void skipComment() {
-        while (!it.isEOF() && it.peekChar()!='\n') {
-            it.nextChar();
-        }
+        it.nextChar();
+        while (it.peekChar() != '\n') it.nextChar();
     }
 }
+
