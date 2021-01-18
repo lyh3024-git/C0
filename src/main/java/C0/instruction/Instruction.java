@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public class Instruction {
     private Operation opt;
-    int x;
+    long x;
     int ByteNum;
 
     public Instruction(Operation opt) {
@@ -16,7 +16,7 @@ public class Instruction {
         this.ByteNum=0;
     }
 
-    public Instruction(Operation opt, int x,int ByteNum) {
+    public Instruction(Operation opt, long x,int ByteNum) {
         this.opt = opt;
         this.x = x;
         this.ByteNum=ByteNum;
@@ -45,11 +45,11 @@ public class Instruction {
         this.opt = opt;
     }
 
-    public int getX() {
+    public long getX() {
         return x;
     }
 
-    public void setX(int x) {
+    public void setX(long x) {
         this.x = x;
     }
 

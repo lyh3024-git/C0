@@ -31,14 +31,15 @@ public class App {
             List<GlobalDef> globalTable;
             List<FunctionDef> functionTable;
             List<Byte> Output = new ArrayList<>();
+
             InputStream inputStream = new FileInputStream(args[0]);
             Scanner scanner = new Scanner(inputStream);
             var iter = new StringIter(scanner);
             Analyser analyser = new Analyser(new Tokenizer(iter));
             analyser.analyse();
 
-            globalTable = analyser.getGlobalTable();
-            functionTable = analyser.getFunctionTable();
+            globalTable = new ArrayList<>(analyser.getGlobalTable());
+            functionTable = new ArrayList<>(analyser.getFunctionTable());
 
             //-----
             System.out.println(globalTable.size());
@@ -103,7 +104,7 @@ public class App {
                 for(Instruction instruction:instructions){
                     Output.add(ByteIntToBytes(instruction.getOpt().getByte()));
                     if(instruction.getByteNum()==4){
-                        Output.addAll(IntToBytes(instruction.getX()));
+                        Output.addAll(IntToBytes((int)instruction.getX()));
                     }
                     else if(instruction.getByteNum()==8){
                         Output.addAll(LongToBytes(instruction.getX()));

@@ -821,6 +821,9 @@ public final class Analyser {
             paramSize++;
             while(check(TokenType.COMMA)){
                 next();
+                if(check(TokenType.CONST_KW)){
+                    next();
+                }
                 paramName=expect(TokenType.IDENT);
                 //判断参数是否重名
                 for(Parameter parameter:parameterList){
